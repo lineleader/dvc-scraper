@@ -6,7 +6,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/gobuffalo/envy"
-	dvcscraper "github.com/lineleader/dvc-pricing-scraper"
+	dvcscraper "github.com/lineleader/dvc-scraper"
 )
 
 func main() {

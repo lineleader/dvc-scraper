@@ -1,4 +1,4 @@
-module github.com/lineleader/dvc-pricing-scraper
+module github.com/lineleader/dvc-scraper
 
 go 1.15
 
