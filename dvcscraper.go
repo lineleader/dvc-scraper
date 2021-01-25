@@ -1,6 +1,7 @@
 package dvcscraper
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -116,6 +117,10 @@ func (s *Scraper) Close() error {
 }
 
 func (s *Scraper) Login(email, password string) error {
+	if email == "" || password == "" {
+		return errors.New("must provide an email and password")
+	}
+
 	page, err := s.getPage()
 	if err != nil {
 		err = fmt.Errorf("failed to get bypass page: %w", err)
