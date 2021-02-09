@@ -9,8 +9,8 @@ import (
 )
 
 var currentPrices = map[string]float64{
-	"Aulani, Disney Vacation Club Villas,\nKo Olina, Hawai‘i":   195,
-	"Disney's Riviera Resort":                                   195,
+	"Aulani, Disney Vacation Club Villas,\nKo Olina, Hawai‘i":   201,
+	"Disney's Riviera Resort":                                   201,
 	"Copper Creek Villas & Cabins at Disney's Wilderness Lodge": 220,
 	"Bay Lake Tower at Disney's Contemporary Resort":            245,
 	"Boulder Ridge Villas at Disney's Wilderness Lodge":         186,
