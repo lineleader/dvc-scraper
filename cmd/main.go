@@ -18,11 +18,11 @@ var currentPrices = map[string]float64{
 	"Disney's Animal Kingdom Villas – Kidani Village":           186,
 	"Disney's Beach Club Villas":                                245,
 	"Disney's BoardWalk Villas":                                 210,
-	"Disney's Hilton Head Island Resort":                        135,
+	"Disney's Hilton Head Island Resort":                        140,
 	"Disney's Old Key West Resort":                              165,
 	"Disney's Polynesian Villas & Bungalows":                    250,
 	"Disney's Saratoga Springs Resort":                          165,
-	"Disney's Vero Beach Resort":                                120,
+	"Disney's Vero Beach Resort":                                125,
 	"The Villas at Disney's Grand Floridian Resort":             255,
 }
 
