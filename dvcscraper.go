@@ -1,3 +1,4 @@
+// Package dvcscraper encapsulates common scraping methods for the DVC website
 package dvcscraper
 
 import (
@@ -25,19 +26,23 @@ const (
 	resortNameSelector  = ".resortTileDetails h3"
 )
 
+// Scraper exposes methods to interact with and scrape data
 type Scraper struct {
 	browser *rod.Browser
 }
 
+// ResortPrice models a resort and a dollar per point price
 type ResortPrice struct {
 	Name          string  `json:"name"`
 	PricePerPoint float64 `json:"price_per_point"`
 }
 
+// Elementable can get an element from itself
 type Elementable interface {
 	Element(string) (*rod.Element, error)
 }
 
+// New returns a Scraper ready to roll
 func New() (Scraper, error) {
 	var scraper Scraper
 
@@ -48,6 +53,7 @@ func New() (Scraper, error) {
 	return scraper, err
 }
 
+// GetPurchasePrices returns current pricing for new contracts with DVC
 func (s *Scraper) GetPurchasePrices() ([]ResortPrice, error) {
 	prices := []ResortPrice{}
 	page, err := s.getPage()
@@ -109,13 +115,22 @@ func (s *Scraper) GetPurchasePrices() ([]ResortPrice, error) {
 		prices = append(prices, ResortPrice{Name: name, PricePerPoint: parsedPrice})
 	}
 
+	if len(errs) > 0 {
+		for _, err := range errs {
+			fmt.Println("Error: ", err)
+		}
+		return prices, errs[0]
+	}
+
 	return prices, nil
 }
 
+// Close cleans up resources for the Scraper
 func (s *Scraper) Close() error {
 	return s.browser.Close()
 }
 
+// Login uses the provided credentials to gain access to protected parts of the DVC site
 func (s *Scraper) Login(email, password string) error {
 	if email == "" || password == "" {
 		return errors.New("must provide an email and password")
