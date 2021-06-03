@@ -44,24 +44,41 @@ func main() {
 	}
 
 	fmt.Println("Signed in!")
+	envy.CurrentPackage()
 
-	prices, err := scraper.GetPurchasePrices()
+	// prices, err := scraper.GetPurchasePrices()
+	// if err != nil {
+	// 	err = fmt.Errorf("failed to get purchase prices: %w", err)
+	// 	log.Fatal(err)
+	// }
+
+	// for _, price := range prices {
+	// 	currentPrice, ok := currentPrices[price.Name]
+	// 	if !ok {
+	// 		fmt.Println("\nCurrent price not found!!", price.Name, price.PricePerPoint)
+	// 		continue
+	// 	}
+
+	// 	if currentPrice != price.PricePerPoint {
+	// 		fmt.Printf("Price difference found!!\n%s\n$%.2f => $%.2f\n\n", price.Name, currentPrice, price.PricePerPoint)
+	// 	}
+	// }
+
+	handle, err := scraper.NewAvailabilityHandle()
 	if err != nil {
-		err = fmt.Errorf("failed to get purchase prices: %w", err)
+		err = fmt.Errorf("failed to get availability handle: %w", err)
 		log.Fatal(err)
 	}
 
-	for _, price := range prices {
-		currentPrice, ok := currentPrices[price.Name]
-		if !ok {
-			fmt.Println("\nCurrent price not found!!", price.Name, price.PricePerPoint)
-			continue
-		}
+	results, err := handle.GetAvailability(dvcscraper.AvailabilityOptions{
+		Resort:    "BLT",
+		RoomType:  "4O",
+		StartDate: "2021-07-01",
+		EndDate:   "2021-07-31",
+	})
 
-		if currentPrice != price.PricePerPoint {
-			fmt.Printf("Price difference found!!\n%s\n$%.2f => $%.2f\n\n", price.Name, currentPrice, price.PricePerPoint)
-		}
-	}
+	fmt.Println("Err:", err)
+	fmt.Println("Res:", results)
 
 	fmt.Println("Done.")
 }
