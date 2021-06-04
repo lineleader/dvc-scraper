@@ -3,7 +3,6 @@ package dvcscraper
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/go-rod/rod"
@@ -74,32 +73,24 @@ func (s *Scraper) NewAvailabilityHandle() (*AvailabilityHandle, error) {
 
 	startDate, endDate := bookingDates()
 	startSelector := calendarPickerMonthSelector + " " + fmt.Sprintf(calendarPickerDaySelector, startDate)
-	log.Println("start", startSelector)
 	err = click(page, startSelector)
 	if err != nil {
 		err = fmt.Errorf("failed to click start date (%s): %w", startDate, err)
 		return &handle, err
 	}
 
-	log.Println("Selected start date")
-
 	endDateSelector := calendarPickerMonthSelector + " " + fmt.Sprintf(calendarPickerDaySelector, endDate)
-	log.Println("end", endDateSelector)
 	err = click(page, endDateSelector)
 	if err != nil {
 		err = fmt.Errorf("failed to click end date (%s): %w", endDate, err)
 		return &handle, err
 	}
 
-	log.Println("Selected end date")
-
 	err = click(page, deluxeStudioButtonSelector)
 	if err != nil {
 		err = fmt.Errorf("failed to click deluxe studio button: %w", err)
 		return &handle, err
 	}
-
-	log.Println("Selected deluxe studio")
 
 	button, err := page.Element(checkAvailabilityButtonSelector)
 	if err != nil {
@@ -119,7 +110,6 @@ func (s *Scraper) NewAvailabilityHandle() (*AvailabilityHandle, error) {
 		err = fmt.Errorf("failed to click availability button: %w", err)
 		return &handle, err
 	}
-	log.Println("Clicked check availability button")
 
 	err = page.WaitLoad()
 	if err != nil {
@@ -155,11 +145,8 @@ func (h *AvailabilityHandle) GetAvailability(opts AvailabilityOptions) (Availabi
 	})
 	if err != nil {
 		err = fmt.Errorf("failed to Evaluate: %w", err)
-		log.Fatal(err)
+		return results, err
 	}
-	log.Println(obj.Value.Get("resortCode").Str())
-	log.Println(obj.Value.Str())
-	log.Println(obj.Value.JSON("", "  "))
 
 	err = json.Unmarshal([]byte(obj.Value.JSON("", "")), &results)
 	if err != nil {
