@@ -47,7 +47,7 @@ func New() (Scraper, error) {
 	var scraper Scraper
 
 	scraper.browser = rod.New()
-	scraper.browser.ServeMonitor(":9777")
+	// scraper.browser.ServeMonitor(":9777")
 
 	err := scraper.browser.Connect()
 	return scraper, err
