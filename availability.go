@@ -25,10 +25,9 @@ const (
 )
 
 type AvailabilityOptions struct {
-	Resort    string `json:"resort"`
-	RoomType  string `json:"roomType"`
-	StartDate string `json:"startDate"`
-	EndDate   string `json:"endDate"`
+	Resort   string    `json:"resort"`
+	RoomType string    `json:"roomType"`
+	Date     time.Time `json:"startDate"`
 }
 
 type AvailabilityResults struct {
@@ -135,12 +134,16 @@ func (h *AvailabilityHandle) GetAvailability(opts AvailabilityOptions) (Availabi
 	results := AvailabilityResults{}
 	page := h.page
 
-	log.Println("opts:", opts)
+	start, end := startEnd(opts.Date)
+	if start.Before(time.Now()) {
+		start = time.Now()
+	}
+
 	body := CalendarRequestBody{
 		Resort:    opts.Resort,
 		RoomType:  opts.RoomType,
-		StartDate: opts.StartDate,
-		EndDate:   opts.EndDate,
+		StartDate: start.Format(dateFormat),
+		EndDate:   end.Format(dateFormat),
 	}
 
 	obj, err := page.Evaluate(&rod.EvalOptions{
@@ -178,6 +181,15 @@ func bookingDates() (string, string) {
 	startOfMonth := time.Date(y, m, 1, 0, 0, 0, 0, loc)
 	startDate := startOfMonth.Format(uiDateFormat)
 	endDate := startOfMonth.AddDate(0, 0, 5).Format(uiDateFormat)
+	return startDate, endDate
+}
+
+func startEnd(in time.Time) (time.Time, time.Time) {
+	loc := in.Location()
+	y, m, _ := in.Date()
+	startOfMonth := time.Date(y, m, 1, 0, 0, 0, 0, loc)
+	startDate := startOfMonth
+	endDate := startOfMonth.AddDate(0, 1, -1)
 	return startDate, endDate
 }
 
