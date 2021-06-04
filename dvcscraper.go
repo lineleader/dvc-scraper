@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/go-rod/rod"
+	"github.com/go-rod/rod/lib/launcher"
 	"github.com/go-rod/rod/lib/proto"
 	"github.com/go-rod/stealth"
 )
@@ -51,6 +52,24 @@ func New() (Scraper, error) {
 
 	err := scraper.browser.Connect()
 	return scraper, err
+}
+
+func NewWithBinary(binpath string) (Scraper, error) {
+	var scraper Scraper
+
+	u, err := launcher.New().Bin(binpath).Launch()
+	if err != nil {
+		err = fmt.Errorf("failed to : %w", err)
+		return scraper, err
+	}
+
+	scraper.browser = rod.New()
+	// scraper.browser.ServeMonitor(":9777")
+	scraper.browser.ControlURL(u)
+
+	err = scraper.browser.Connect()
+	return scraper, err
+
 }
 
 // GetPurchasePrices returns current pricing for new contracts with DVC
