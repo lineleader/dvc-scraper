@@ -135,10 +135,6 @@ func (h *AvailabilityHandle) GetAvailability(opts AvailabilityOptions) (Availabi
 	page := h.page
 
 	start, end := startEnd(opts.Date)
-	if start.Before(time.Now()) {
-		start = time.Now()
-	}
-
 	body := CalendarRequestBody{
 		Resort:    opts.Resort,
 		RoomType:  opts.RoomType,
@@ -190,6 +186,15 @@ func startEnd(in time.Time) (time.Time, time.Time) {
 	startOfMonth := time.Date(y, m, 1, 0, 0, 0, 0, loc)
 	startDate := startOfMonth
 	endDate := startOfMonth.AddDate(0, 1, -1)
+
+	if startDate.Before(time.Now()) {
+		startDate = time.Now()
+	}
+
+	if endDate.Month() == time.Now().AddDate(0, 11, 0).Month() {
+		endDate = time.Now().AddDate(0, 11, 6)
+	}
+
 	return startDate, endDate
 }
 
