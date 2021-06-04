@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/go-rod/bypass"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
+	"github.com/go-rod/stealth"
 )
 
 const (
@@ -227,7 +227,7 @@ func getIFrame(page *rod.Page, selector string) (*rod.Page, error) {
 }
 
 func (s *Scraper) getPage() (*rod.Page, error) {
-	return bypass.Page(s.browser)
+	return stealth.Page(s.browser)
 }
 
 func textOfElement(page Elementable, selector string) (string, error) {
