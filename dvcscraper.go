@@ -2,10 +2,17 @@
 package dvcscraper
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"log"
+	"os"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
@@ -25,6 +32,8 @@ const (
 	resortCardsSelector = ".resortListItem"
 	resortPriceSelector = ".resortPricing"
 	resortNameSelector  = ".resortTileDetails h3"
+
+	cooieSessionFile = ".dvcscraper-session.json"
 )
 
 // Scraper provides authenticated access to the DVC website to scrape data easily
@@ -50,6 +59,20 @@ func New() (Scraper, error) {
 	// scraper.browser.ServeMonitor(":9777")
 
 	err := scraper.browser.Connect()
+
+	cookieReader, err := os.Open(cooieSessionFile)
+	if err != nil {
+		err = fmt.Errorf("failed to read cookie session file: %w", err)
+		return scraper, err
+	}
+	defer cookieReader.Close()
+
+	err = scraper.SetCookies(cookieReader)
+	if err != nil {
+		err = fmt.Errorf("failed to set cookies: %w", err)
+		return scraper, err
+	}
+
 	return scraper, err
 }
 
@@ -69,7 +92,54 @@ func NewWithBinary(binpath string) (Scraper, error) {
 
 	err = scraper.browser.Connect()
 	return scraper, err
+}
 
+// GetCookies returns a JSON encoded set of the current Scraper's browser's cookies.
+//
+// This is used in conjunction with `SetCookies` to pre- or re-load browser
+// state across scraper runs. For example, to bypass logging in each run and reuse
+// sessions.
+//
+// Callers of `GetCookies` should persist the returned bytes and then call
+// `SetCookies` later with the same content. This will "resume" where you left off.
+func (s *Scraper) GetCookies() ([]byte, error) {
+	cookies, err := s.browser.GetCookies()
+	if err != nil {
+		err = fmt.Errorf("failed to get cookies from browser: %w", err)
+		return []byte{}, err
+	}
+
+	raw, err := json.Marshal(&cookies)
+	if err != nil {
+		err = fmt.Errorf("failed to marshal cookies: %w", err)
+		return []byte{}, err
+	}
+
+	return raw, nil
+}
+
+// SetCookies takes JSON content from the provided io.reader and sets cookies
+// on the Scraper's browser.
+//
+// This is used in conjunction with `GetCookies` to carry-over the current
+// browser state/session forward to subsequent scraper runs.
+func (s *Scraper) SetCookies(raw io.Reader) error {
+	buf := bytes.Buffer{}
+	_, err := buf.ReadFrom(raw)
+	if err != nil {
+		err = fmt.Errorf("failed to read cookie reader: %w", err)
+		return err
+	}
+
+	cookies := []*proto.NetworkCookie{}
+	err = json.Unmarshal(buf.Bytes(), &cookies)
+	if err != nil {
+		err = fmt.Errorf("failed to unmarshal cookies: %w", err)
+		return err
+	}
+
+	s.browser.SetCookies(proto.CookiesToParams(cookies))
+	return nil
 }
 
 // GetPurchasePrices returns current pricing for new contracts with DVC
@@ -146,7 +216,30 @@ func (s *Scraper) GetPurchasePrices() ([]ResortPrice, error) {
 
 // Close cleans up resources for the Scraper
 func (s *Scraper) Close() error {
+	err := s.cleanup()
+	if err != nil {
+		log.Println(err.Error())
+	}
+
 	return s.browser.Close()
+}
+
+func (s *Scraper) cleanup() error {
+	cookieWriter, err := os.Create(cooieSessionFile)
+	if err != nil {
+		err = fmt.Errorf("failed to open session cookie file: %w", err)
+		return err
+	}
+	defer cookieWriter.Close()
+
+	cookieBytes, err := s.GetCookies()
+	if err != nil {
+		err = fmt.Errorf("failed to get cookies: %w", err)
+		return err
+	}
+
+	_, err = cookieWriter.Write(cookieBytes)
+	return err
 }
 
 // Login uses the provided credentials to gain access to protected parts of the DVC site
