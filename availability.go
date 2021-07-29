@@ -70,8 +70,6 @@ func (s *Scraper) NewAvailabilityHandle() (*AvailabilityHandle, error) {
 		return &handle, err
 	}
 
-	page.MustScreenshot("booking-page.png")
-
 	startDate, endDate := bookingDates()
 	startSelector := calendarPickerMonthSelector + " " + fmt.Sprintf(calendarPickerDaySelector, startDate)
 	err = click(page, startSelector)
@@ -104,7 +102,6 @@ func (s *Scraper) NewAvailabilityHandle() (*AvailabilityHandle, error) {
 		err = fmt.Errorf("failed to scroll availability button into view: %w", err)
 		return &handle, err
 	}
-	page.MustScreenshot("filled-form.png")
 
 	err = button.Click(proto.InputMouseButtonLeft)
 	if err != nil {
