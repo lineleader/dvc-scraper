@@ -23,6 +23,7 @@ const (
 	dateFormat   = "2006-01-02"
 )
 
+// AvailabilityOptions configure an availability request
 type AvailabilityOptions struct {
 	Resort   string    `json:"resort"`
 	RoomType string    `json:"roomType"`

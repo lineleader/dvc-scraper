@@ -27,7 +27,7 @@ const (
 	resortNameSelector  = ".resortTileDetails h3"
 )
 
-// Scraper exposes methods to interact with and scrape data
+// Scraper provides authenticated access to the DVC website to scrape data easily
 type Scraper struct {
 	browser *rod.Browser
 }
@@ -38,8 +38,7 @@ type ResortPrice struct {
 	PricePerPoint float64 `json:"price_per_point"`
 }
 
-// Elementable can get an element from itself
-type Elementable interface {
+type elementable interface {
 	Element(string) (*rod.Element, error)
 }
 
@@ -54,6 +53,7 @@ func New() (Scraper, error) {
 	return scraper, err
 }
 
+// NewWithBinary returns a new Scraper with the provided browser binary launched
 func NewWithBinary(binpath string) (Scraper, error) {
 	var scraper Scraper
 
@@ -249,7 +249,7 @@ func (s *Scraper) getPage() (*rod.Page, error) {
 	return stealth.Page(s.browser)
 }
 
-func textOfElement(page Elementable, selector string) (string, error) {
+func textOfElement(page elementable, selector string) (string, error) {
 	elem, err := page.Element(selector)
 	if err != nil {
 		err = fmt.Errorf("failed to get element for text: %w", err)
