@@ -22,9 +22,11 @@ const (
 	signinURL = "https://disneyvacationclub.disney.go.com/sign-in/"
 
 	dashboardCheckSelector = ".memberNewsAlert"
+	signInBodySelector     = "body#registration_sign_in"
 	signInEmailSelector    = ".field-username-email input"
 	signInPasswordSelector = ".field-password input"
 	signInSubmitSelector   = ".workflow-login .btn-submit"
+	signInErrorSelector    = ".banner.login.message-error.message.state-active"
 
 	cooieSessionFile = ".dvcscraper-session.json"
 )
@@ -83,7 +85,7 @@ func NewWithBinary(email, password, binpath string) (Scraper, error) {
 	}
 
 	scraper.browser = rod.New()
-	// scraper.browser.ServeMonitor(":9777")
+	scraper.browser.ServeMonitor(":9777")
 	scraper.browser.ControlURL(u)
 	err = scraper.browser.Connect()
 	if err != nil {
@@ -250,7 +252,16 @@ func (s *Scraper) Login() error {
 		return err
 	}
 
-	_, err = page.Race().Element(dashboardCheckSelector).Do()
+	err = rod.Try(func() {
+		page.Timeout(10 * time.Second).Race().Element(dashboardCheckSelector)
+	})
+	if errors.Is(err, context.DeadlineExceeded) {
+		signInMsg, err := frame.Element(signInErrorSelector)
+		page.MustScreenshotFullPage("login-error.png")
+		text, _ := signInMsg.Text()
+		err = fmt.Errorf("failed to login: '%s'. See login-error.png for more details.", text)
+		return err
+	}
 
 	return err
 }
@@ -262,13 +273,15 @@ func (s *Scraper) AuthenticatedNavigate(url string) error {
 		return err
 	}
 
+	wait := page.WaitNavigation(proto.PageLifecycleEventNameNetworkAlmostIdle)
 	err = page.Navigate(url)
 	if err != nil {
 		err = fmt.Errorf("failed to navigate to '%s': %w", url, err)
 		return err
 	}
+	wait()
 
-	notLoggedIn, err := onPage(page, "body#registration_sign_in")
+	notLoggedIn, err := onPage(page, signInBodySelector)
 	if err != nil {
 		err = fmt.Errorf("failed to check if logged in: %w", err)
 		return err
@@ -351,7 +364,7 @@ func textOfElement(page elementable, selector string) (string, error) {
 
 func onPage(page *rod.Page, selector string) (bool, error) {
 	err := rod.Try(func() {
-		page.Timeout(2 * time.Second).MustElement(selector)
+		page.Timeout(10 * time.Second).MustElement(selector)
 	})
 	if errors.Is(err, context.DeadlineExceeded) {
 		return false, nil
