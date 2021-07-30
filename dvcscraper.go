@@ -155,24 +155,16 @@ func (s *Scraper) SetCookies(raw io.Reader) error {
 // GetPurchasePrices returns current pricing for new contracts with DVC
 func (s *Scraper) GetPurchasePrices() ([]ResortPrice, error) {
 	prices := []ResortPrice{}
-	page, err := s.getPage()
-	if err != nil {
-		err = fmt.Errorf("failed to get bypass page: %w", err)
-		return prices, err
-	}
 
-	err = page.Navigate(addOnURL)
+	err := s.AuthenticatedNavigate(addOnURL)
 	if err != nil {
 		err = fmt.Errorf("failed to visit add-on tool page: %w", err)
 		return prices, err
 	}
 
-	err = page.SetViewport(&proto.EmulationSetDeviceMetricsOverride{
-		Width:  2560,
-		Height: 1400,
-	})
+	page, err := s.getPage()
 	if err != nil {
-		err = fmt.Errorf("failed to set viewport: %w", err)
+		err = fmt.Errorf("failed to get bypass page: %w", err)
 		return prices, err
 	}
 
@@ -300,8 +292,39 @@ func (s *Scraper) Login() error {
 	}
 
 	_, err = page.Race().Element(dashboardCheckSelector).Do()
+
+	return err
+}
+
+func (s *Scraper) AuthenticatedNavigate(url string) error {
+	page, err := s.getPage()
 	if err != nil {
-		err = fmt.Errorf("failed to confirm sign in : %w", err)
+		err = fmt.Errorf("failed to get page for navigation: %w", err)
+		return err
+	}
+
+	err = page.Navigate(url)
+	if err != nil {
+		err = fmt.Errorf("failed to navigate to '%s': %w", url, err)
+		return err
+	}
+
+	notLoggedIn, err := onPage(page, "body#registration_sign_in")
+	if err != nil {
+		err = fmt.Errorf("failed to check if logged in: %w", err)
+		return err
+	}
+
+	if notLoggedIn {
+		err = s.Login()
+		if err != nil {
+			return err
+		}
+	}
+
+	err = page.Navigate(url)
+	if err != nil {
+		err = fmt.Errorf("failed to navigate to '%s' after login: %w", url, err)
 		return err
 	}
 
@@ -364,4 +387,16 @@ func textOfElement(page elementable, selector string) (string, error) {
 	}
 
 	return elem.Text()
+}
+
+func onPage(page *rod.Page, selector string) (bool, error) {
+	err := rod.Try(func() {
+		page.Timeout(2 * time.Second).MustElement(selector)
+	})
+	if errors.Is(err, context.DeadlineExceeded) {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
 }
