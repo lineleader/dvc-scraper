@@ -62,11 +62,13 @@ func (s *Scraper) Login() error {
 		return err
 	}
 
+	wait := waitNavigation(page)
 	err = click(frame, signInSubmitSelector)
 	if err != nil {
 		err = fmt.Errorf("failed to click to sign in: %w", err)
 		return err
 	}
+	wait()
 
 	err = rod.Try(func() {
 		page.Timeout(10 * time.Second).Race().Element(dashboardCheckSelector)

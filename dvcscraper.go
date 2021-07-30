@@ -214,7 +214,7 @@ func (s *Scraper) AuthenticatedNavigate(url string) error {
 		return err
 	}
 
-	wait := page.WaitNavigation(proto.PageLifecycleEventNameNetworkAlmostIdle)
+	wait := waitNavigation(page)
 	err = page.Navigate(url)
 	if err != nil {
 		err = fmt.Errorf("failed to navigate to '%s': %w", url, err)
@@ -236,7 +236,7 @@ func (s *Scraper) AuthenticatedNavigate(url string) error {
 		}
 	}
 
-	wait = page.WaitNavigation(proto.PageLifecycleEventNameNetworkAlmostIdle)
+	wait = waitNavigation(page)
 	err = page.Navigate(url)
 	if err != nil {
 		err = fmt.Errorf("failed to navigate to '%s' after login: %w", url, err)
@@ -315,4 +315,8 @@ func onPage(page *rod.Page, selector string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func waitNavigation(page *rod.Page) func() {
+	return page.WaitNavigation(proto.PageLifecycleEventNameNetworkAlmostIdle)
 }
