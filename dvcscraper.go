@@ -41,6 +41,8 @@ type Scraper struct {
 	email    string
 	password string
 
+	logger *log.Logger
+
 	browser *rod.Browser
 	page    *rod.Page
 }
@@ -60,6 +62,8 @@ func New(email, password string) (Scraper, error) {
 	scraper := Scraper{
 		email:    email,
 		password: password,
+
+		logger: log.Default(),
 	}
 
 	scraper.browser = rod.New()
@@ -81,6 +85,8 @@ func NewWithBinary(email, password, binpath string) (Scraper, error) {
 	scraper := Scraper{
 		email:    email,
 		password: password,
+
+		logger: log.Default(),
 	}
 
 	u, err := launcher.New().Bin(binpath).Launch()
@@ -102,6 +108,10 @@ func NewWithBinary(email, password, binpath string) (Scraper, error) {
 		err = fmt.Errorf("failed to read cookies: %w", err)
 	}
 	return scraper, err
+}
+
+func (s *Scraper) SetLogger(logger *log.Logger) {
+	s.logger = logger
 }
 
 func (s *Scraper) readCookies() error {
@@ -237,7 +247,7 @@ func (s *Scraper) GetPurchasePrices() ([]ResortPrice, error) {
 func (s *Scraper) Close() error {
 	err := s.cleanup()
 	if err != nil {
-		log.Println(err.Error())
+		s.logger.Println(err.Error())
 	}
 
 	return s.browser.Close()
@@ -333,6 +343,7 @@ func (s *Scraper) AuthenticatedNavigate(url string) error {
 	}
 
 	if notLoggedIn {
+		s.logger.Println("Need to re-auth")
 		err = s.Login()
 		if err != nil {
 			return err
