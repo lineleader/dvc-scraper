@@ -306,11 +306,13 @@ func (s *Scraper) AuthenticatedNavigate(url string) error {
 		}
 	}
 
+	wait = page.WaitNavigation(proto.PageLifecycleEventNameNetworkAlmostIdle)
 	err = page.Navigate(url)
 	if err != nil {
 		err = fmt.Errorf("failed to navigate to '%s' after login: %w", url, err)
 		return err
 	}
+	wait()
 
 	return nil
 }
