@@ -42,6 +42,7 @@ type Scraper struct {
 	password string
 
 	browser *rod.Browser
+	page    *rod.Page
 }
 
 // ResortPrice models a resort and a dollar per point price
@@ -344,7 +345,15 @@ func getIFrame(page *rod.Page, selector string) (*rod.Page, error) {
 }
 
 func (s *Scraper) getPage() (*rod.Page, error) {
-	return stealth.Page(s.browser)
+	var err error
+	if s.page == nil {
+		s.page, err = stealth.Page(s.browser)
+		if err != nil {
+			return s.page, err
+		}
+	}
+
+	return s.page, nil
 }
 
 func textOfElement(page elementable, selector string) (string, error) {
