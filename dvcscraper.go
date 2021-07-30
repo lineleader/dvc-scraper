@@ -64,22 +64,15 @@ func New(email, password string) (Scraper, error) {
 
 	scraper.browser = rod.New()
 	// scraper.browser.ServeMonitor(":9777")
-
 	err := scraper.browser.Connect()
-
-	cookieReader, err := os.Open(cooieSessionFile)
 	if err != nil {
-		err = fmt.Errorf("failed to read cookie session file: %w", err)
+		err = fmt.Errorf("failed to connect to browser: %w", err)
 		return scraper, err
 	}
-	defer cookieReader.Close()
-
-	err = scraper.SetCookies(cookieReader)
+	err = scraper.readCookies()
 	if err != nil {
-		err = fmt.Errorf("failed to set cookies: %w", err)
-		return scraper, err
+		err = fmt.Errorf("failed to read cookies: %w", err)
 	}
-
 	return scraper, err
 }
 
@@ -99,9 +92,33 @@ func NewWithBinary(email, password, binpath string) (Scraper, error) {
 	scraper.browser = rod.New()
 	// scraper.browser.ServeMonitor(":9777")
 	scraper.browser.ControlURL(u)
-
 	err = scraper.browser.Connect()
+	if err != nil {
+		err = fmt.Errorf("failed to connect to browser: %w", err)
+		return scraper, err
+	}
+	err = scraper.readCookies()
+	if err != nil {
+		err = fmt.Errorf("failed to read cookies: %w", err)
+	}
 	return scraper, err
+}
+
+func (s *Scraper) readCookies() error {
+	cookieReader, err := os.Open(cooieSessionFile)
+	if err != nil {
+		err = fmt.Errorf("failed to read cookie session file: %w", err)
+		return err
+	}
+	defer cookieReader.Close()
+
+	err = s.SetCookies(cookieReader)
+	if err != nil {
+		err = fmt.Errorf("failed to set cookies: %w", err)
+		return err
+	}
+
+	return nil
 }
 
 // GetCookies returns a JSON encoded set of the current Scraper's browser's cookies.
