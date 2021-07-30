@@ -102,6 +102,15 @@ func (s *Scraper) SetLogger(logger *log.Logger) {
 }
 
 func (s *Scraper) readCookies() error {
+	_, err := os.Stat(cooieSessionFile)
+	if os.IsNotExist(err) {
+		// no previous session; continue
+		return nil
+	} else if err != nil {
+		err = fmt.Errorf("failed to check for session file: %w", err)
+		return err
+	}
+
 	cookieReader, err := os.Open(cooieSessionFile)
 	if err != nil {
 		err = fmt.Errorf("failed to read cookie session file: %w", err)
