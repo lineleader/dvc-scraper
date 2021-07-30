@@ -38,6 +38,9 @@ const (
 
 // Scraper provides authenticated access to the DVC website to scrape data easily
 type Scraper struct {
+	email    string
+	password string
+
 	browser *rod.Browser
 }
 
@@ -52,8 +55,11 @@ type elementable interface {
 }
 
 // New returns a Scraper ready to roll
-func New() (Scraper, error) {
-	var scraper Scraper
+func New(email, password string) (Scraper, error) {
+	scraper := Scraper{
+		email:    email,
+		password: password,
+	}
 
 	scraper.browser = rod.New()
 	// scraper.browser.ServeMonitor(":9777")
@@ -77,8 +83,11 @@ func New() (Scraper, error) {
 }
 
 // NewWithBinary returns a new Scraper with the provided browser binary launched
-func NewWithBinary(binpath string) (Scraper, error) {
-	var scraper Scraper
+func NewWithBinary(email, password, binpath string) (Scraper, error) {
+	scraper := Scraper{
+		email:    email,
+		password: password,
+	}
 
 	u, err := launcher.New().Bin(binpath).Launch()
 	if err != nil {
@@ -242,12 +251,8 @@ func (s *Scraper) cleanup() error {
 	return err
 }
 
-// Login uses the provided credentials to gain access to protected parts of the DVC site
-func (s *Scraper) Login(email, password string) error {
-	if email == "" || password == "" {
-		return errors.New("must provide an email and password")
-	}
-
+// Login authenticates to gain access to protected parts of the DVC site
+func (s *Scraper) Login() error {
 	page, err := s.getPage()
 	if err != nil {
 		err = fmt.Errorf("failed to get bypass page: %w", err)
@@ -275,13 +280,13 @@ func (s *Scraper) Login(email, password string) error {
 		return err
 	}
 
-	err = typeInput(frame, signInEmailSelector, email)
+	err = typeInput(frame, signInEmailSelector, s.email)
 	if err != nil {
 		err = fmt.Errorf("failed to input email address: %w", err)
 		return err
 	}
 
-	err = typeInput(frame, signInPasswordSelector, password)
+	err = typeInput(frame, signInPasswordSelector, s.password)
 	if err != nil {
 		err = fmt.Errorf("failed to input password: %w", err)
 		return err
