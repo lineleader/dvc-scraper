@@ -205,6 +205,17 @@ func (s *Scraper) cleanup() error {
 	return err
 }
 
+func (s *Scraper) Screenshot(filename string) error {
+	page, err := s.getPage()
+	if err != nil {
+		err = fmt.Errorf("failed to get page for screenshot: %w", err)
+		return err
+	}
+
+	page.MustScreenshotFullPage(filename)
+	return nil
+}
+
 // Login authenticates to gain access to protected parts of the DVC site
 func (s *Scraper) Login() error {
 	page, err := s.getPage()
