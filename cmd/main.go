@@ -30,6 +30,8 @@ var currentPrices = map[string]float64{
 func main() {
 	email := envy.Get("EMAIL", "")
 	password := envy.Get("PASSWORD", "")
+	// email := faker.Email()
+	// password := faker.Password()
 
 	scraper, err := dvcscraper.New(email, password)
 	if err != nil {
