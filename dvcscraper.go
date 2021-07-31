@@ -19,13 +19,6 @@ import (
 )
 
 const (
-	signinURL = "https://disneyvacationclub.disney.go.com/sign-in/"
-
-	dashboardCheckSelector = ".memberNewsAlert"
-	signInEmailSelector    = ".field-username-email input"
-	signInPasswordSelector = ".field-password input"
-	signInSubmitSelector   = ".workflow-login .btn-submit"
-
 	cooieSessionFile = ".dvcscraper-session.json"
 )
 
@@ -83,7 +76,7 @@ func NewWithBinary(email, password, binpath string) (Scraper, error) {
 	}
 
 	scraper.browser = rod.New()
-	// scraper.browser.ServeMonitor(":9777")
+	scraper.browser.ServeMonitor(":9777")
 	scraper.browser.ControlURL(u)
 	err = scraper.browser.Connect()
 	if err != nil {
@@ -203,56 +196,15 @@ func (s *Scraper) cleanup() error {
 	return err
 }
 
-// Login authenticates to gain access to protected parts of the DVC site
-func (s *Scraper) Login() error {
+func (s *Scraper) Screenshot(filename string) error {
 	page, err := s.getPage()
 	if err != nil {
-		err = fmt.Errorf("failed to get bypass page: %w", err)
+		err = fmt.Errorf("failed to get page for screenshot: %w", err)
 		return err
 	}
 
-	err = page.Navigate(signinURL)
-	if err != nil {
-		err = fmt.Errorf("failed to visit sign in page: %w", err)
-		return err
-	}
-
-	err = page.SetViewport(&proto.EmulationSetDeviceMetricsOverride{
-		Width:  2560,
-		Height: 1400,
-	})
-	if err != nil {
-		err = fmt.Errorf("failed to set viewport: %w", err)
-		return err
-	}
-
-	frame, err := getIFrame(page, `iframe[id="disneyid-iframe"]`)
-	if err != nil {
-		err = fmt.Errorf("failed to get iframe page: %w", err)
-		return err
-	}
-
-	err = typeInput(frame, signInEmailSelector, s.email)
-	if err != nil {
-		err = fmt.Errorf("failed to input email address: %w", err)
-		return err
-	}
-
-	err = typeInput(frame, signInPasswordSelector, s.password)
-	if err != nil {
-		err = fmt.Errorf("failed to input password: %w", err)
-		return err
-	}
-
-	err = click(frame, signInSubmitSelector)
-	if err != nil {
-		err = fmt.Errorf("failed to click to sign in: %w", err)
-		return err
-	}
-
-	_, err = page.Race().Element(dashboardCheckSelector).Do()
-
-	return err
+	page.MustScreenshotFullPage(filename)
+	return nil
 }
 
 func (s *Scraper) AuthenticatedNavigate(url string) error {
@@ -262,13 +214,15 @@ func (s *Scraper) AuthenticatedNavigate(url string) error {
 		return err
 	}
 
+	wait := waitNavigation(page)
 	err = page.Navigate(url)
 	if err != nil {
 		err = fmt.Errorf("failed to navigate to '%s': %w", url, err)
 		return err
 	}
+	wait()
 
-	notLoggedIn, err := onPage(page, "body#registration_sign_in")
+	notLoggedIn, err := onPage(page, signInBodySelector)
 	if err != nil {
 		err = fmt.Errorf("failed to check if logged in: %w", err)
 		return err
@@ -282,11 +236,13 @@ func (s *Scraper) AuthenticatedNavigate(url string) error {
 		}
 	}
 
+	wait = waitNavigation(page)
 	err = page.Navigate(url)
 	if err != nil {
 		err = fmt.Errorf("failed to navigate to '%s' after login: %w", url, err)
 		return err
 	}
+	wait()
 
 	return nil
 }
@@ -351,7 +307,7 @@ func textOfElement(page elementable, selector string) (string, error) {
 
 func onPage(page *rod.Page, selector string) (bool, error) {
 	err := rod.Try(func() {
-		page.Timeout(2 * time.Second).MustElement(selector)
+		page.Timeout(10 * time.Second).MustElement(selector)
 	})
 	if errors.Is(err, context.DeadlineExceeded) {
 		return false, nil
@@ -359,4 +315,8 @@ func onPage(page *rod.Page, selector string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func waitNavigation(page *rod.Page) func() {
+	return page.WaitNavigation(proto.PageLifecycleEventNameNetworkAlmostIdle)
 }
