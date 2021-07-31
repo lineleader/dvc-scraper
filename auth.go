@@ -71,11 +71,15 @@ func (s *Scraper) Login() error {
 	wait()
 
 	err = rod.Try(func() {
-		page.Timeout(10 * time.Second).Race().Element(dashboardCheckSelector)
+		page.Timeout(10 * time.Second).MustElement(dashboardCheckSelector)
 	})
 	if errors.Is(err, context.DeadlineExceeded) {
-		signInMsg, err := frame.Element(signInErrorSelector)
 		page.MustScreenshotFullPage("login-error.png")
+		signInMsg, err := frame.Element(signInErrorSelector)
+		if err != nil {
+			err = fmt.Errorf("failed to get sign in error: %w (See login-error.png for details)", err)
+			return err
+		}
 		text, _ := signInMsg.Text()
 		err = fmt.Errorf("failed to login: '%s'. See login-error.png for more details.", text)
 		return err
