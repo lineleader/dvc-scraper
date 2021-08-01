@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	signinURL = "https://disneyvacationclub.disney.go.com/sign-in/"
+	signinURL            = "https://disneyvacationclub.disney.go.com/sign-in/"
+	signinSuccessTimeout = 30 * time.Second
 
 	dashboardCheckSelector = ".memberNewsAlert"
 	signInBodySelector     = "body#registration_sign_in"
@@ -71,7 +72,7 @@ func (s *Scraper) Login() error {
 	wait()
 
 	err = rod.Try(func() {
-		page.Timeout(10 * time.Second).MustElement(dashboardCheckSelector)
+		page.Timeout(signinSuccessTimeout).MustElement(dashboardCheckSelector)
 	})
 	if errors.Is(err, context.DeadlineExceeded) {
 		page.MustScreenshotFullPage("login-error.png")
