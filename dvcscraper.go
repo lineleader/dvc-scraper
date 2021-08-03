@@ -232,7 +232,10 @@ func (s *Scraper) AuthenticatedNavigate(url string) error {
 		s.logger.Println("Need to re-auth")
 		err = s.Login()
 		if err != nil {
-			return err
+			if isCertainlyLoginError(err) {
+				return err
+			}
+			s.logger.Println("Possible login error: %w", err)
 		}
 	}
 
@@ -319,4 +322,12 @@ func onPage(page *rod.Page, selector string) (bool, error) {
 
 func waitNavigation(page *rod.Page) func() {
 	return page.WaitNavigation(proto.PageLifecycleEventNameNetworkAlmostIdle)
+}
+
+func isCertainlyLoginError(err error) bool {
+	type certain interface {
+		CertainlyFailed() bool
+	}
+	ce, ok := err.(certain)
+	return ok && ce.CertainlyFailed()
 }

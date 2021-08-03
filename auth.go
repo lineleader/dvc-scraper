@@ -75,16 +75,27 @@ func (s *Scraper) Login() error {
 		page.Timeout(signinSuccessTimeout).MustElement(dashboardCheckSelector)
 	})
 	if errors.Is(err, context.DeadlineExceeded) {
-		page.MustScreenshotFullPage("login-error.png")
+		filename := fmt.Sprintf("login-error-%s.png", time.Now().Format(time.RFC3339))
+		page.MustScreenshotFullPage(filename)
+		lErr := loginError{}
 		signInMsg, err := frame.Element(signInErrorSelector)
 		if err != nil {
-			err = fmt.Errorf("failed to get sign in error: %w (See login-error.png for details)", err)
-			return err
+			lErr.msg = fmt.Sprintf("failed to get sign in error: %w (See %s for details)", err, filename)
+			return lErr
 		}
 		text, _ := signInMsg.Text()
-		err = fmt.Errorf("failed to login: '%s'. See login-error.png for more details.", text)
+		lErr.msg = fmt.Sprintf("failed to login: '%s'. See %s for more details.", text, filename)
+		lErr.certainlyFailed = true
 		return err
 	}
 
 	return err
 }
+
+type loginError struct {
+	msg             string
+	certainlyFailed bool
+}
+
+func (l loginError) Error() string         { return l.msg }
+func (l loginError) CertainlyFailed() bool { return l.certainlyFailed }
