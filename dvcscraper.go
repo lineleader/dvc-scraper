@@ -257,6 +257,12 @@ func click(page *rod.Page, selector string) error {
 		return err
 	}
 
+	err = clickElem.ScrollIntoView()
+	if err != nil {
+		err = fmt.Errorf("failed to scroll element into view for click: %w", err)
+		return err
+	}
+
 	return clickElem.Click(proto.InputMouseButtonLeft)
 }
 
