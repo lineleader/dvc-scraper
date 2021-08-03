@@ -77,6 +77,7 @@ func (s *Scraper) NewAvailabilityHandle() (*AvailabilityHandle, error) {
 		err = fmt.Errorf("failed to click start date (%s): %w", startDate, err)
 		return &handle, err
 	}
+	s.logger.Println("Clicked start date")
 
 	endDateSelector := calendarPickerMonthSelector + " " + fmt.Sprintf(calendarPickerDaySelector, endDate)
 	err = click(page, endDateSelector)
@@ -84,36 +85,42 @@ func (s *Scraper) NewAvailabilityHandle() (*AvailabilityHandle, error) {
 		err = fmt.Errorf("failed to click end date (%s): %w", endDate, err)
 		return &handle, err
 	}
+	s.logger.Println("Clicked end date")
 
 	err = click(page, deluxeStudioButtonSelector)
 	if err != nil {
 		err = fmt.Errorf("failed to click deluxe studio button: %w", err)
 		return &handle, err
 	}
+	s.logger.Println("Clicked studio button")
 
 	button, err := page.Element(checkAvailabilityButtonSelector)
 	if err != nil {
 		err = fmt.Errorf("failed to get check availability button element: %w", err)
 		return &handle, err
 	}
+	s.logger.Println("Got check availability button")
 
 	err = button.ScrollIntoView()
 	if err != nil {
 		err = fmt.Errorf("failed to scroll availability button into view: %w", err)
 		return &handle, err
 	}
+	s.logger.Println("Scrolled to check availability button")
 
 	err = button.Click(proto.InputMouseButtonLeft)
 	if err != nil {
 		err = fmt.Errorf("failed to click availability button: %w", err)
 		return &handle, err
 	}
+	s.logger.Println("Clicked check availability button")
 
 	err = page.WaitLoad()
 	if err != nil {
 		err = fmt.Errorf("failed to wait for search page to load: %w", err)
 		return &handle, err
 	}
+	s.logger.Println("Waited loading")
 
 	return &handle, nil
 }
