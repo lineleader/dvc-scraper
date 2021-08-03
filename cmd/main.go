@@ -47,7 +47,8 @@ func main() {
 	err = scraper.AuthenticatedNavigate("https://disneyvacationclub.disney.go.com/home/")
 	if err != nil {
 		err = fmt.Errorf("failed to visit dashboard: %w", err)
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 
 	scraper.Screenshot("dashboard.png")
