@@ -47,7 +47,6 @@ func New(email, password string) (Scraper, error) {
 	}
 
 	scraper.browser = rod.New()
-	// scraper.browser.ServeMonitor(":9777")
 	err := scraper.browser.Connect()
 	if err != nil {
 		err = fmt.Errorf("failed to connect to browser: %w", err)
@@ -76,7 +75,6 @@ func NewWithBinary(email, password, binpath string) (Scraper, error) {
 	}
 
 	scraper.browser = rod.New()
-	scraper.browser.ServeMonitor(":9777")
 	scraper.browser.ControlURL(u)
 	err = scraper.browser.Connect()
 	if err != nil {
