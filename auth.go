@@ -12,9 +12,9 @@ import (
 
 const (
 	signinURL            = "https://disneyvacationclub.disney.go.com/sign-in/"
-	signinSuccessTimeout = 30 * time.Second
+	signinSuccessTimeout = 15 * time.Second
 
-	dashboardCheckSelector = ".memberNewsAlert"
+	dashboardCheckSelector = ".homePageSeparator"
 	signInBodySelector     = "body#registration_sign_in"
 	signInEmailSelector    = ".field-username-email input"
 	signInPasswordSelector = ".field-password input"
