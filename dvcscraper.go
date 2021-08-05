@@ -90,10 +90,6 @@ func New(opts ScraperOptions) (Scraper, error) {
 	return scraper, err
 }
 
-func (s *Scraper) SetLogger(logger *log.Logger) {
-	s.logger = logger
-}
-
 func (s *Scraper) readCookies() error {
 	_, err := os.Stat(cooieSessionFile)
 	if os.IsNotExist(err) {
