@@ -246,18 +246,20 @@ func (s *Scraper) AuthenticatedNavigate(url string) error {
 	return nil
 }
 
-func click(page *rod.Page, selector string) error {
+func (s *Scraper) click(page *rod.Page, selector string) error {
 	clickElem, err := page.Element(selector)
 	if err != nil {
 		err = fmt.Errorf("failed to get element for click: %w", err)
 		return err
 	}
+	s.logger.Printf("got '%s' element to click", selector)
 
 	err = clickElem.ScrollIntoView()
 	if err != nil {
 		err = fmt.Errorf("failed to scroll element into view for click: %w", err)
 		return err
 	}
+	s.logger.Printf("scrolled '%s' element into view to click", selector)
 
 	return clickElem.Click(proto.InputMouseButtonLeft)
 }

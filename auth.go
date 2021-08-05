@@ -69,7 +69,7 @@ func (s *Scraper) Login() error {
 	s.logger.Println("entered password for auth")
 
 	wait := waitNavigation(page)
-	err = click(frame, signInSubmitSelector)
+	err = s.click(frame, signInSubmitSelector)
 	if err != nil {
 		err = fmt.Errorf("failed to click to sign in: %w", err)
 		return err
