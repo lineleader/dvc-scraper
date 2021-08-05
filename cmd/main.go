@@ -33,7 +33,10 @@ func main() {
 	// email := faker.Email()
 	// password := faker.Password()
 
-	scraper, err := dvcscraper.New(email, password)
+	scraper, err := dvcscraper.New(dvcscraper.ScraperOptions{
+		Email:    email,
+		Password: password,
+	})
 	if err != nil {
 		err = fmt.Errorf("failed to start scraper: %w", err)
 		log.Fatal(err)

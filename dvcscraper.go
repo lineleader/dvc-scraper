@@ -22,6 +22,16 @@ const (
 	cooieSessionFile = ".dvcscraper-session.json"
 )
 
+type ScraperOptions struct {
+	Email    string
+	Password string
+
+	Logger *log.Logger
+
+	SkipSession bool
+	BinaryPath  string
+}
+
 // Scraper provides authenticated access to the DVC website to scrape data easily
 type Scraper struct {
 	email    string
@@ -38,53 +48,45 @@ type elementable interface {
 }
 
 // New returns a Scraper ready to roll
-func New(email, password string) (Scraper, error) {
+func New(opts ScraperOptions) (Scraper, error) {
 	scraper := Scraper{
-		email:    email,
-		password: password,
+		email:    opts.Email,
+		password: opts.Password,
 
 		logger: log.Default(),
 	}
 
+	if opts.Logger != nil {
+		scraper.logger = opts.Logger
+	}
+
 	scraper.browser = rod.New()
+
+	if opts.BinaryPath != "" {
+		u, err := launcher.New().Bin(opts.BinaryPath).Launch()
+		if err != nil {
+			err = fmt.Errorf("failed to : %w", err)
+			return scraper, err
+		}
+
+		scraper.browser = rod.New()
+		scraper.browser.ControlURL(u)
+
+	}
+
 	err := scraper.browser.Connect()
 	if err != nil {
 		err = fmt.Errorf("failed to connect to browser: %w", err)
 		return scraper, err
 	}
-	err = scraper.readCookies()
-	if err != nil {
-		err = fmt.Errorf("failed to read cookies: %w", err)
-	}
-	return scraper, err
-}
 
-// NewWithBinary returns a new Scraper with the provided browser binary launched
-func NewWithBinary(email, password, binpath string) (Scraper, error) {
-	scraper := Scraper{
-		email:    email,
-		password: password,
-
-		logger: log.Default(),
+	if !opts.SkipSession {
+		err = scraper.readCookies()
+		if err != nil {
+			err = fmt.Errorf("failed to read cookies: %w", err)
+		}
 	}
 
-	u, err := launcher.New().Bin(binpath).Launch()
-	if err != nil {
-		err = fmt.Errorf("failed to : %w", err)
-		return scraper, err
-	}
-
-	scraper.browser = rod.New()
-	scraper.browser.ControlURL(u)
-	err = scraper.browser.Connect()
-	if err != nil {
-		err = fmt.Errorf("failed to connect to browser: %w", err)
-		return scraper, err
-	}
-	err = scraper.readCookies()
-	if err != nil {
-		err = fmt.Errorf("failed to read cookies: %w", err)
-	}
 	return scraper, err
 }
 
@@ -335,3 +337,19 @@ func isCertainlyLoginError(err error) bool {
 	ce, ok := err.(certain)
 	return ok && ce.CertainlyFailed()
 }
+
+func FailedToStart(err error) bool {
+	type failed interface {
+		FailedToStart() bool
+	}
+	f, ok := err.(failed)
+	return ok && f.FailedToStart()
+}
+
+type startingError struct {
+	msg           string
+	failedToStart bool
+}
+
+func (s startingError) Error() string       { return s.msg }
+func (s startingError) FailedToStart() bool { return s.failedToStart }
