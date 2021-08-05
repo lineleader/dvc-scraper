@@ -29,12 +29,14 @@ func (s *Scraper) Login() error {
 		err = fmt.Errorf("failed to get bypass page: %w", err)
 		return err
 	}
+	s.logger.Println("got page for auth")
 
 	err = page.Navigate(signinURL)
 	if err != nil {
 		err = fmt.Errorf("failed to visit sign in page: %w", err)
 		return err
 	}
+	s.logger.Println("navigated for auth")
 
 	err = page.SetViewport(&proto.EmulationSetDeviceMetricsOverride{
 		Width:  2560,
@@ -50,18 +52,21 @@ func (s *Scraper) Login() error {
 		err = fmt.Errorf("failed to get iframe page: %w", err)
 		return err
 	}
+	s.logger.Println("got iframe for auth")
 
 	err = typeInput(frame, signInEmailSelector, s.email)
 	if err != nil {
 		err = fmt.Errorf("failed to input email address: %w", err)
 		return err
 	}
+	s.logger.Println("entered email for auth")
 
 	err = typeInput(frame, signInPasswordSelector, s.password)
 	if err != nil {
 		err = fmt.Errorf("failed to input password: %w", err)
 		return err
 	}
+	s.logger.Println("entered password for auth")
 
 	wait := waitNavigation(page)
 	err = click(frame, signInSubmitSelector)
@@ -70,7 +75,9 @@ func (s *Scraper) Login() error {
 		return err
 	}
 	wait()
+	s.logger.Println("clicked sign in for auth")
 
+	s.logger.Println("waiting for sign in results")
 	err = rod.Try(func() {
 		page.Timeout(signinSuccessTimeout).MustElement(dashboardCheckSelector)
 	})

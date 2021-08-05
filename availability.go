@@ -61,6 +61,7 @@ func (s *Scraper) NewAvailabilityHandle() (*AvailabilityHandle, error) {
 		err = fmt.Errorf("failed to get page: %w", err)
 		return &handle, err
 	}
+	s.logger.Println("got page for avail")
 
 	handle.page = page
 
@@ -69,6 +70,7 @@ func (s *Scraper) NewAvailabilityHandle() (*AvailabilityHandle, error) {
 		err = fmt.Errorf("failed to navigate to booking page: %w", err)
 		return &handle, err
 	}
+	s.logger.Println("navigated to booking page for avail")
 
 	startDate, endDate := bookingDates()
 	startSelector := calendarPickerMonthSelector + " " + fmt.Sprintf(calendarPickerDaySelector, startDate)
