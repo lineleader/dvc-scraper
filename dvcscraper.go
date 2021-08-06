@@ -69,7 +69,6 @@ func New(opts ScraperOptions) (Scraper, error) {
 			return scraper, err
 		}
 
-		scraper.browser = rod.New()
 		scraper.browser.ControlURL(u)
 
 	}
