@@ -198,4 +198,4 @@ const getAvailJS = `(url, body) => fetch(url,
 		"Cache-Control": "no-cache",
 	},
 	body: JSON.stringify(body),
-}).then(r => r.json())`
+}).then(r => r.json()).catch(error => error.message)`
