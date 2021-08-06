@@ -30,6 +30,7 @@ type ScraperOptions struct {
 
 	SkipSession bool
 	BinaryPath  string
+	MonitorURL  string
 }
 
 // Scraper provides authenticated access to the DVC website to scrape data easily
@@ -70,7 +71,10 @@ func New(opts ScraperOptions) (Scraper, error) {
 		}
 
 		scraper.browser.ControlURL(u)
+	}
 
+	if opts.MonitorURL != "" {
+		scraper.browser.ServeMonitor(opts.MonitorURL)
 	}
 
 	err := scraper.browser.Connect()
