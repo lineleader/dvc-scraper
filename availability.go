@@ -151,7 +151,7 @@ func (h *AvailabilityHandle) GetAvailability(opts AvailabilityOptions) (Availabi
 
 	err = json.Unmarshal([]byte(obj.Value.JSON("", "")), &results)
 	if err != nil {
-		err = fmt.Errorf("failed to unmarshal results: %w", err)
+		err = fmt.Errorf("failed to unmarshal results: %w -- %s", err, obj.Value.JSON("", ""))
 		return results, err
 	}
 
