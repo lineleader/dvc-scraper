@@ -136,7 +136,7 @@ func (h *AvailabilityHandle) GetAvailability(opts AvailabilityOptions) (Availabi
 	obj, err := page.Evaluate(&rod.EvalOptions{
 		AwaitPromise: true,
 		ByValue:      true,
-		UserGesture:  false,
+		UserGesture:  true,
 		ThisObj:      nil,
 		JS:           getAvailJS,
 		JSArgs: []interface{}{
