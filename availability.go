@@ -15,6 +15,7 @@ const (
 	calendarPickerMonthSelector = ".mobCoreDatepickerRange ul.carousel-wrapper li.carousel-slide"
 	calendarPickerDaySelector   = "td[data-date='%s']"
 	deluxeStudioButtonSelector  = "#mobBookingRoomType button[data-capacity='deluxe-studio']"
+	closeTermsSelector          = "button#closeTermsOfUse"
 
 	checkAvailabilityButtonSelector = "button#checkAvailabilityBtn"
 
@@ -70,6 +71,14 @@ func (s *Scraper) NewAvailabilityHandle() (*AvailabilityHandle, error) {
 		return &handle, err
 	}
 	s.logger.Println("navigated to booking page for avail")
+
+	err = s.click(page, closeTermsSelector)
+	if err != nil {
+		err = fmt.Errorf("failed to click close terms button: %w, moving on", err)
+		s.logger.Println(err.Error())
+	} else {
+		s.logger.Println("Clicked close terms button")
+	}
 
 	startDate, endDate := bookingDates()
 	startSelector := calendarPickerMonthSelector + " " + fmt.Sprintf(calendarPickerDaySelector, startDate)
