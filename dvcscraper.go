@@ -206,7 +206,7 @@ func (s *Scraper) Screenshot(filename string) error {
 	return nil
 }
 
-func (s *Scraper) AuthenticatedNavigate(url string) error {
+func (s *Scraper) AuthenticatedNavigate(url, successSelector string) error {
 	page, err := s.getPage()
 	if err != nil {
 		err = fmt.Errorf("failed to get page for navigation: %w", err)
@@ -221,9 +221,16 @@ func (s *Scraper) AuthenticatedNavigate(url string) error {
 	}
 	wait()
 
-	notLoggedIn, err := onPage(page, signInBodySelector)
+	notLoggedIn := true
+	_, err = page.Race().Element(successSelector).Handle(func(e *rod.Element) error {
+		notLoggedIn = false
+		return nil
+	}).Element(signInBodySelector).Handle(func(e *rod.Element) error {
+		notLoggedIn = true
+		return nil
+	}).Do()
 	if err != nil {
-		err = fmt.Errorf("failed to check if logged in: %w", err)
+		err = fmt.Errorf("failed to race for signed in results: %w", err)
 		return err
 	}
 

@@ -47,7 +47,10 @@ func main() {
 	// prices(&scraper)
 	// avail(&scraper)
 
-	err = scraper.AuthenticatedNavigate("https://disneyvacationclub.disney.go.com/home/")
+	err = scraper.AuthenticatedNavigate(
+		"https://disneyvacationclub.disney.go.com/home/",
+		".news-alert-header",
+	)
 	if err != nil {
 		err = fmt.Errorf("failed to visit dashboard: %w", err)
 		log.Println(err)

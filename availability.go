@@ -65,7 +65,7 @@ func (s *Scraper) NewAvailabilityHandle() (*AvailabilityHandle, error) {
 
 	handle.page = page
 
-	err = s.AuthenticatedNavigate(bookingPage)
+	err = s.AuthenticatedNavigate(bookingPage, closeTermsSelector)
 	if err != nil {
 		err = fmt.Errorf("failed to navigate to booking page: %w", err)
 		return &handle, err

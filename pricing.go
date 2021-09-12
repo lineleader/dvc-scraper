@@ -24,7 +24,7 @@ type ResortPrice struct {
 func (s *Scraper) GetPurchasePrices() ([]ResortPrice, error) {
 	prices := []ResortPrice{}
 
-	err := s.AuthenticatedNavigate(addOnURL)
+	err := s.AuthenticatedNavigate(addOnURL, resortCardsSelector)
 	if err != nil {
 		err = fmt.Errorf("failed to visit add-on tool page: %w", err)
 		return prices, err
