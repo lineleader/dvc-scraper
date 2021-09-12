@@ -14,8 +14,8 @@ const (
 	signinURL            = "https://disneyvacationclub.disney.go.com/sign-in/"
 	signinSuccessTimeout = 15 * time.Second
 
-	dashboardCheckSelector = ".homePageSeparator"
-	signInBodySelector     = "body#registration_sign_in"
+	dashboardCheckSelector = ".news-alert-header"
+	signInBodySelector     = "div#disneyid-wrapper"
 	signInEmailSelector    = ".field-username-email input"
 	signInPasswordSelector = ".field-password input"
 	signInSubmitSelector   = ".workflow-login .btn-submit"
