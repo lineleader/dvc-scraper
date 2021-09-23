@@ -186,16 +186,21 @@ func startEnd(in time.Time) (time.Time, time.Time) {
 	return startDate, endDate
 }
 
-const getAvailJS = `(url, body) => fetch(url,
-{
-	method: "POST",
-	headers: {
-		Accept: "application/json, text/plain, */*",
-		"Accept-Language": "en-US,en;q=0.5",
-		"Content-Type": "application/json;charset=utf-8",
-		ADRUM: "isAjax:true",
-		Pragma: "no-cache",
-		"Cache-Control": "no-cache",
-	},
-	body: JSON.stringify(body),
-}).then(r => r.json()).catch(error => error.message)`
+const getAvailJS = `(url, body) => {
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), 5000)
+	return fetch(url, {
+		signal: controller.signal,
+		method: "POST",
+		headers: {
+			Accept: "application/json, text/plain, */*",
+			"Accept-Language": "en-US,en;q=0.5",
+			"Content-Type": "application/json;charset=utf-8",
+			ADRUM: "isAjax:true",
+			Pragma: "no-cache",
+			"Cache-Control": "no-cache",
+		},
+		body: JSON.stringify(body),
+	}).then(r => r.json()).catch(error => error.message)
+}
+`
