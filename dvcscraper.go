@@ -223,14 +223,23 @@ func (s *Scraper) AuthenticatedNavigate(url, successSelector string) error {
 
 	notLoggedIn := true
 	_, err = page.Race().Element(successSelector).Handle(func(e *rod.Element) error {
+		s.logger.Println("successful race to login")
 		notLoggedIn = false
 		return nil
-	}).Element(signInBodySelector).Handle(func(e *rod.Element) error {
-		notLoggedIn = true
+	}).Element(signInIFrameSelector).Handle(func(e *rod.Element) error {
+		s.logger.Println("unsuccessful race to login")
+		loggedIn, err := onPage(page, successSelector)
+		if err != nil {
+			err = fmt.Errorf("failed to wait for success selector after fail to race: %w", err)
+			s.logger.Println(err)
+			notLoggedIn = true
+			return nil
+		}
+		notLoggedIn = !loggedIn
 		return nil
 	}).Do()
 	if err != nil {
-		err = fmt.Errorf("failed to race for signed in results: %w", err)
+		err = fmt.Errorf("failed to race for logged in status: %w", err)
 		return err
 	}
 

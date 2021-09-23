@@ -15,6 +15,7 @@ const (
 	signinSuccessTimeout = 15 * time.Second
 
 	dashboardCheckSelector = ".news-alert-header"
+	signInIFrameSelector   = `iframe[id="disneyid-iframe"]`
 	signInBodySelector     = "div#disneyid-wrapper"
 	signInEmailSelector    = ".field-username-email input"
 	signInPasswordSelector = ".field-password input"
@@ -47,7 +48,7 @@ func (s *Scraper) Login() error {
 		return err
 	}
 
-	frame, err := getIFrame(page, `iframe[id="disneyid-iframe"]`)
+	frame, err := getIFrame(page, signInIFrameSelector)
 	if err != nil {
 		err = fmt.Errorf("failed to get iframe page: %w", err)
 		return err
