@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	cooieSessionFile = ".dvcscraper-session.json"
+	cookieSessionFile = ".dvcscraper-session.json"
 )
 
 type ScraperOptions struct {
@@ -94,7 +94,7 @@ func New(opts ScraperOptions) (Scraper, error) {
 }
 
 func (s *Scraper) readCookies() error {
-	_, err := os.Stat(cooieSessionFile)
+	_, err := os.Stat(cookieSessionFile)
 	if os.IsNotExist(err) {
 		// no previous session; continue
 		return nil
@@ -103,7 +103,7 @@ func (s *Scraper) readCookies() error {
 		return err
 	}
 
-	cookieReader, err := os.Open(cooieSessionFile)
+	cookieReader, err := os.Open(cookieSessionFile)
 	if err != nil {
 		err = fmt.Errorf("failed to read cookie session file: %w", err)
 		return err
@@ -178,7 +178,7 @@ func (s *Scraper) Close() error {
 }
 
 func (s *Scraper) cleanup() error {
-	cookieWriter, err := os.Create(cooieSessionFile)
+	cookieWriter, err := os.Create(cookieSessionFile)
 	if err != nil {
 		err = fmt.Errorf("failed to open session cookie file: %w", err)
 		return err
