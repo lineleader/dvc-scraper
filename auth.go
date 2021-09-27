@@ -89,13 +89,17 @@ func (s *Scraper) Login() error {
 		lErr := loginError{}
 		signInMsg, err := frame.Element(signInErrorSelector)
 		if err != nil {
-			lErr.msg = fmt.Errorf("failed to get sign in error: %w (See %s for details)", err, filename)
+			lErr.msg = fmt.Sprintf(
+				"failed to get sign in error: %s (See %s for details)",
+				err.Error(),
+				filename,
+			)
 			return lErr
 		}
 		text, err := signInMsg.Text()
 		if err != nil {
-			err = fmt.Errorf("failed to get sign in message text after timeout: %w", err)
-			return err
+			lErr.msg = fmt.Sprintf("failed to get sign in message text after timeout: %s", err.Error())
+			return lErr
 		}
 		lErr.msg = fmt.Sprintf("failed to login: '%s'. See %s for more details.", text, filename)
 		lErr.certainlyFailed = true
