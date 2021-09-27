@@ -80,6 +80,7 @@ func (s *Scraper) Login() error {
 
 	s.logger.Println("waiting for sign in results")
 	err = rod.Try(func() {
+		s.logger.Println("checking for", dashboardCheckSelector)
 		page.Timeout(signinSuccessTimeout).MustElement(dashboardCheckSelector)
 	})
 	if errors.Is(err, context.DeadlineExceeded) {
