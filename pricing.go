@@ -9,9 +9,9 @@ import (
 const (
 	addOnURL = "https://disneyvacationclub.disney.go.com/add-vacation-points/"
 
-	resortCardsSelector = ".resortListItem"
-	resortPriceSelector = ".resortPricing"
-	resortNameSelector  = ".resortTileDetails h3"
+	resortCardsSelector = ".resort-tile"
+	resortPriceSelector = ".resort-pricing"
+	resortNameSelector  = ".resort-details h3"
 )
 
 // ResortPrice models a resort and a dollar per point price
