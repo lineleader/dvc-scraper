@@ -252,8 +252,10 @@ func (s *Scraper) AuthenticatedNavigate(url, successSelector string) error {
 			}
 			s.logger.Println("Possible login error: %w", err)
 		}
+		s.logger.Println("Finished re-auth")
 	}
 
+	s.logger.Println("Navigating to original URL:", url)
 	wait = waitNavigation(page)
 	err = page.Navigate(url)
 	if err != nil {

@@ -103,7 +103,7 @@ func (s *Scraper) Login() error {
 		}
 		lErr.msg = fmt.Sprintf("failed to login: '%s'. See %s for more details.", text, filename)
 		lErr.certainlyFailed = true
-		return err
+		return lErr
 	}
 
 	return err
